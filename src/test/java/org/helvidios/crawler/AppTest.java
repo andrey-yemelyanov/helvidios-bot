@@ -40,8 +40,15 @@ public class AppTest
         }
         catch(FetchException ex){
             System.out.println(ex);
-            System.out.println(Throwables.getStackTraceAsString(ex));
+            //System.out.println(Throwables.getStackTraceAsString(ex));
         }
         
+        var httpClient = HttpClient.withRetry(3);
+        try{
+            System.out.println(httpClient.fetch(URI.create("https://en.wikipedia.org/wiki/Web_crawler")));
+        }
+        catch(FetchException ex){
+            System.out.println(Throwables.getStackTraceAsString(ex));
+        }
     }
 }

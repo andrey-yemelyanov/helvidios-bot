@@ -43,4 +43,12 @@ class BasicHtmlDocument implements HtmlDocument {
         return Collections.emptyList();
     }
     
+    @Override
+    public String toString() {
+        final String separator = "\n\n" + String.join("", Collections.nCopies(100, "*")) + "\n\n";
+        return String.format(
+            "[%s]%s%s%s\n", 
+            url(), separator, content(), separator
+        );
+    }
 }
