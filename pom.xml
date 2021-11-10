@@ -61,6 +61,10 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
+          <configuration>
+            <groups>org.helvidios.crawler.UnitTest</groups>
+            <excludedGroups>org.helvidios.crawler.SlowTest</excludedGroups>
+          </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>

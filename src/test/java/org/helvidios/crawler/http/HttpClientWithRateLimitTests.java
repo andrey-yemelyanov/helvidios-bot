@@ -13,14 +13,18 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import com.google.common.util.concurrent.RateLimiter;
+
+import org.helvidios.crawler.UnitTest;
 import org.helvidios.crawler.model.HtmlDocument;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 
 @RunWith(MockitoJUnitRunner.class)
+@Category(UnitTest.class)
 public class HttpClientWithRateLimitTests {
     
     private final URI url = URI.create("http://www.google.com");

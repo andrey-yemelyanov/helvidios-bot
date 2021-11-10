@@ -1,7 +1,9 @@
 package org.helvidios.crawler.http;
 
+import org.helvidios.crawler.UnitTest;
 import org.helvidios.crawler.model.HtmlDocument;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import static org.junit.Assert.*;
@@ -10,6 +12,7 @@ import java.io.IOException;
 import java.net.URI;
 
 @RunWith(MockitoJUnitRunner.class)
+@Category(UnitTest.class)
 public class HttpClientWithRetryTests {
 
     private final URI url = URI.create("http://www.google.com");
