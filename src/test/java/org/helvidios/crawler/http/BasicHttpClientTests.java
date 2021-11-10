@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
+import com.google.common.util.concurrent.RateLimiter;
 import org.helvidios.crawler.SlowTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -15,6 +16,16 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 @Category(SlowTest.class)
 public class BasicHttpClientTests {
+
+    @Test
+    public void ShouldDownloadWebPageFromInternetUsingRateLimitingAndRetry() throws FetchException {
+        final String url = "https://en.wikipedia.org/wiki/Web_crawler";
+        var httpClient = HttpClient.withRetryAndRateLimit(Duration.ofSeconds(1), 3, RateLimiter.create(5));
+        var doc = httpClient.fetch(URI.create(url));
+        assertNotNull(doc);
+        assertNotNull(doc.content());
+        assertEquals(url, doc.url().toString());
+    }
     
     @Test
     public void ShouldDownloadWebPageFromInternet() throws FetchException {
