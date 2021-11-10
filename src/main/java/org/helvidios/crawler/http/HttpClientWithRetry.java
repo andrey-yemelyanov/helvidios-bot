@@ -2,13 +2,13 @@ package org.helvidios.crawler.http;
 
 import java.net.URI;
 import java.util.Objects;
-import org.helvidios.crawler.HtmlDocument;
+import org.helvidios.crawler.model.HtmlDocument;
 import io.github.resilience4j.retry.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.vavr.CheckedFunction1;
 
-public class HttpClientWithRetry implements HttpClient {
+class HttpClientWithRetry implements HttpClient {
     private final HttpClient httpClient;
     private final Retry fetchRetry;
 
@@ -16,7 +16,7 @@ public class HttpClientWithRetry implements HttpClient {
     private final double MULTIPLIER = 1.75;
     private final double RANDOMIZATION_FACTOR = 0.5;
 
-    public HttpClientWithRetry(int retries, HttpClient httpClient){
+    HttpClientWithRetry(int retries, HttpClient httpClient){
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
 
         var intervalFn = IntervalFunction.ofExponentialRandomBackoff(INITIAL_INTERVAL, MULTIPLIER, RANDOMIZATION_FACTOR);

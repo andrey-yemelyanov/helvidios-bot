@@ -7,15 +7,19 @@ import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.time.Duration;
-import org.helvidios.crawler.HtmlDocument;
+import java.util.Objects;
+import org.helvidios.crawler.model.HtmlDocument;
 
 /**
  * Implements page downloading using {@link HttpClient} from standard library.
+ * No rate limiting or retries are supported in this implementation.
  */
 class BasicHttpClient implements org.helvidios.crawler.http.HttpClient {
     private final HttpClient httpClient;
+    private final Duration requestTimeout;
 
-    BasicHttpClient(){
+    BasicHttpClient(Duration requestTimeout){
+        this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout must not be null");
         this.httpClient = HttpClient.newBuilder()
             .version(Version.HTTP_2)
             .followRedirects(Redirect.NORMAL)
@@ -28,7 +32,7 @@ class BasicHttpClient implements org.helvidios.crawler.http.HttpClient {
             
             var request = HttpRequest.newBuilder()
                 .uri(url)
-                .timeout(Duration.ofMinutes(1))
+                .timeout(requestTimeout)
                 .build();
 
             var response = httpClient.send(request, BodyHandlers.ofString());
@@ -39,5 +43,4 @@ class BasicHttpClient implements org.helvidios.crawler.http.HttpClient {
             throw new FetchException(url, ex);
         }
     }
-    
 }

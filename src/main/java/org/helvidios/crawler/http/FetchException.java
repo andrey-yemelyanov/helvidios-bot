@@ -9,9 +9,9 @@ import java.util.Objects;
 public class FetchException extends Exception {
     private final URI url;
 
-    public FetchException(URI url, Throwable causedBy){
+    FetchException(URI url, Throwable causedBy){
         super(
-            String.format("Unable to fetch web page from '%s'", 
+            String.format("Unable to fetch web page from [%s]", 
             Objects.requireNonNull(url, "url must not be null")), 
             causedBy);
         this.url = url;

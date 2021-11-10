@@ -3,7 +3,7 @@ package org.helvidios.crawler.http;
 import java.net.URI;
 import java.util.Objects;
 import com.google.common.util.concurrent.RateLimiter;
-import org.helvidios.crawler.HtmlDocument;
+import org.helvidios.crawler.model.HtmlDocument;
 
 /**
  * An implementation of {@link HttpClient} with rate limiting based on Guava's {@link RateLimiter}.
@@ -27,5 +27,4 @@ class HttpClientWithRateLimit implements HttpClient {
         rateLimiter.acquire();
         return httpClient.fetch(url);
     }
-    
 }

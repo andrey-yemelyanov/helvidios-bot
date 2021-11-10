@@ -1,4 +1,4 @@
-package org.helvidios.crawler;
+package org.helvidios.crawler.model;
 
 import java.net.URI;
 import java.util.Collections;
