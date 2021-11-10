@@ -20,7 +20,11 @@ public class BasicHttpClientTests {
     @Test
     public void ShouldDownloadWebPageFromInternetUsingRateLimitingAndRetry() throws FetchException {
         final String url = "https://en.wikipedia.org/wiki/Web_crawler";
-        var httpClient = HttpClient.withRetryAndRateLimit(Duration.ofSeconds(1), 3, RateLimiter.create(5));
+        var httpClient = HttpClient.Builder()
+                                   .withRequestTimeout(Duration.ofSeconds(10))
+                                   .withRetries(3)
+                                   .withRateLimiter(RateLimiter.create(5))
+                                   .build();
         var doc = httpClient.fetch(URI.create(url));
         assertNotNull(doc);
         assertNotNull(doc.content());
@@ -30,7 +34,8 @@ public class BasicHttpClientTests {
     @Test
     public void ShouldDownloadWebPageFromInternet() throws FetchException {
         final String url = "https://en.wikipedia.org/wiki/2021_New_York_City_Marathon";
-        var httpClient = HttpClient.basic(Duration.ofMillis(1000));
+        var httpClient = HttpClient.Builder().build();
+        assertTrue("httpClient must be instanceof BasicHttpClient", httpClient instanceof BasicHttpClient);
         var doc = httpClient.fetch(URI.create(url));
         assertNotNull(doc);
         assertNotNull(doc.content());
@@ -40,14 +45,14 @@ public class BasicHttpClientTests {
     @Test(expected = FetchException.class)
     public void ShouldThrowFetchExceptionIfInvalidUrl() throws FetchException {
         final String url = "https://localhost/index.html";
-        var httpClient = HttpClient.basic(Duration.ofMillis(1000));
+        var httpClient = HttpClient.Builder().withRequestTimeout(Duration.ofSeconds(1)).build();
         httpClient.fetch(URI.create(url));
     }
 
     @Test
     public void ShouldThrowFetchExceptionAfterTimeout() {
         final String url = "https://httpstat.us/200?sleep=5000";
-        var httpClient = HttpClient.basic(Duration.ofMillis(1000));
+        var httpClient = HttpClient.Builder().withRequestTimeout(Duration.ofSeconds(1)).build();
         
         try{
             httpClient.fetch(URI.create(url));
@@ -62,7 +67,7 @@ public class BasicHttpClientTests {
     @Test
     public void ShouldNotTimeoutEvenIfServerIsSlow() throws FetchException {
         final String url = "https://httpstat.us/200?sleep=5000";
-        var httpClient = HttpClient.basic(Duration.ofMillis(7000));
+        var httpClient = HttpClient.Builder().withRequestTimeout(Duration.ofSeconds(10)).build();
         var doc = httpClient.fetch(URI.create(url));
         assertNotNull(doc);
         assertNotNull(doc.content());

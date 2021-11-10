@@ -2,6 +2,7 @@ package org.helvidios.crawler.http;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Objects;
 import com.google.common.util.concurrent.RateLimiter;
 import org.helvidios.crawler.model.HtmlDocument;
 
@@ -20,24 +21,68 @@ public interface HttpClient {
     HtmlDocument fetch(URI url) throws FetchException;
 
     /**
-     * Returns a default instance of {@link HttpClient}. This is a bare-bones implementation
-     * without support for retries or rate limiting.
-     * @param requestTimeout time duration to wait before an HTTP request times out
-     * @return default {@link HttpClient} instance
+     * Returns builder that can be used for constructing {@link HttpClient}
+     * @return {@link Builder} with default parameters
      */
-    public static HttpClient basic(Duration requestTimeout){
-        return new BasicHttpClient(requestTimeout);
+    public static Builder Builder(){
+        return new Builder();
     }
 
-    /**
-     * Returns an instance of {@link HttpClient} that supports both rate limiting and retries.
-     * @param requestTimeout time duration to wait before an HTTP request times out
-     * @param retries number of attempts to download a web page in case of communication failure
-     * @param rateLimiter shared rate limiter that will limit a max number of requests per second issued by this client
-     * @return {@link HttpClient} instance with rate limiting and support for retries
-     */
-    public static HttpClient withRetryAndRateLimit(Duration requestTimeout, int retries, RateLimiter rateLimiter){
-        return new HttpClientWithRateLimit(rateLimiter, 
-            new HttpClientWithRetry(retries, basic(requestTimeout)));
+    static class Builder {
+        private Duration requestTimeout = Duration.ofMinutes(1);
+        private Integer retries;
+        private RateLimiter rateLimiter;
+
+        private Builder(){}
+
+        /**
+         * Set a custom timeout duration for all HTTP requests.
+         * @param requestTimeout timeout duration
+         * @return {@link Builder}
+         */
+        public Builder withRequestTimeout(Duration requestTimeout){
+            this.requestTimeout = Objects.requireNonNull(requestTimeout, "requestTimeout must not be null");
+            return this;
+        }
+
+        /**
+         * Set a custom value for max number of attempts to perform an HTTP request before giving up and throwing an exception.
+         * @param retries max number of attempts to perform an HTTP request
+         * @throws IllegalArgumentException if retries < 1
+         * @return {@link Builder}
+         */
+        public Builder withRetries(int retries){
+            if(retries == 0) throw new IllegalArgumentException("retries must be greater than zero");
+            this.retries = retries;
+            return this;
+        }
+
+        /**
+         * Set rate limiter used for limiting max number of HTTP requests per second.
+         * @param rateLimiter rate limiter
+         * @return {@link Builder}
+         */
+        public Builder withRateLimiter(RateLimiter rateLimiter){
+            this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter must not be null");;
+            return this;
+        }
+
+        /**
+         * Builds a fully initialized instance of {@code HttpClient}.
+         * @return {@code HttpClient}
+         */
+        public HttpClient build(){
+            HttpClient httpClient = new BasicHttpClient(requestTimeout);
+            
+            if(retries != null) {
+                httpClient = new HttpClientWithRetry(retries, httpClient);
+            }
+            
+            if(rateLimiter != null){
+                httpClient = new HttpClientWithRateLimit(rateLimiter, httpClient);
+            }
+
+            return httpClient;
+        }
     }
 }
