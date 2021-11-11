@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.net.URI;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
-import com.google.common.util.concurrent.RateLimiter;
 import org.helvidios.crawler.SlowTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -23,7 +22,7 @@ public class NetworkCommunicationTests {
         var httpClient = HttpClient.Builder()
                                    .withRequestTimeout(Duration.ofSeconds(10))
                                    .withRetries(3)
-                                   .withRateLimiter(RateLimiter.create(5))
+                                   .withRateLimiter(5)
                                    .build();
         var doc = httpClient.fetch(URI.create(url));
         assertNotNull(doc);

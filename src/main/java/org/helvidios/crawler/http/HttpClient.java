@@ -3,7 +3,6 @@ package org.helvidios.crawler.http;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Objects;
-import com.google.common.util.concurrent.RateLimiter;
 import org.helvidios.crawler.model.HtmlDocument;
 
 /**
@@ -34,7 +33,7 @@ public interface HttpClient {
     static class Builder {
         private Duration requestTimeout = Duration.ofMinutes(1);
         private Integer retries;
-        private RateLimiter rateLimiter;
+        private Integer requestsPerSecond;
 
         private Builder(){}
 
@@ -61,12 +60,12 @@ public interface HttpClient {
         }
 
         /**
-         * Set rate limiter used for limiting max number of HTTP requests per second.
-         * @param rateLimiter rate limiter
+         * Set rate limit for max number of HTTP requests per second.
+         * @param requestsPerSecond max number of QPS (Queries Per Second)
          * @return {@link Builder}
          */
-        public Builder withRateLimiter(RateLimiter rateLimiter){
-            this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter must not be null");;
+        public Builder withRateLimiter(int requestsPerSecond){
+            this.requestsPerSecond = requestsPerSecond;
             return this;
         }
 
@@ -81,8 +80,8 @@ public interface HttpClient {
                 httpClient = new HttpClientWithRetry(retries, httpClient);
             }
             
-            if(rateLimiter != null){
-                httpClient = new HttpClientWithRateLimit(rateLimiter, httpClient);
+            if(requestsPerSecond != null){
+                httpClient = new HttpClientWithRateLimit(requestsPerSecond, httpClient);
             }
 
             return httpClient;

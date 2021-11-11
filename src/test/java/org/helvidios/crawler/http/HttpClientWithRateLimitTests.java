@@ -12,8 +12,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
-import com.google.common.util.concurrent.RateLimiter;
-
 import org.helvidios.crawler.UnitTest;
 import org.helvidios.crawler.model.HtmlDocument;
 import org.junit.Test;
@@ -35,7 +33,7 @@ public class HttpClientWithRateLimitTests {
 
         final Map<Long, Integer> requests = new HashMap<>();
         final int CONCURRENT_CLIENTS = 50;
-        final RateLimiter rateLimiter = RateLimiter.create(10); // max 10 requests/second
+        final int QPS = 10;
         final Lock lock = new ReentrantLock();
 
         var httpClientMock = mock(HttpClient.class);
@@ -58,7 +56,7 @@ public class HttpClientWithRateLimitTests {
 
         var callables = 
             IntStream.range(0, CONCURRENT_CLIENTS)
-                     .mapToObj(i -> new HttpClientWithRateLimit(rateLimiter, httpClientMock))
+                     .mapToObj(i -> new HttpClientWithRateLimit(QPS, httpClientMock))
                      .map(this::toCallable)
                      .toList();
 

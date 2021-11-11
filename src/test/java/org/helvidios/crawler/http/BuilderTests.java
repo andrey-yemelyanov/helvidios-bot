@@ -1,7 +1,6 @@
 package org.helvidios.crawler.http;
 
 import static org.junit.Assert.assertTrue;
-import com.google.common.util.concurrent.RateLimiter;
 import org.helvidios.crawler.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,13 +25,13 @@ public class BuilderTests {
 
     @Test
     public void ShouldBuildHttpClientWithRateLimiter() {
-        var httpClient = HttpClient.Builder().withRateLimiter(RateLimiter.create(1)).build();
+        var httpClient = HttpClient.Builder().withRateLimiter(1).build();
         assertTrue("httpClient must be instanceof HttpClientWithRateLimit", httpClient instanceof HttpClientWithRateLimit);
     }
 
     @Test
     public void ShouldBuildHttpClientWithRateLimiterAndRetry() {
-        var httpClient = HttpClient.Builder().withRateLimiter(RateLimiter.create(1)).withRetries(3).build();
+        var httpClient = HttpClient.Builder().withRateLimiter(1).withRetries(3).build();
         assertTrue("httpClient must be instanceof HttpClientWithRateLimit", httpClient instanceof HttpClientWithRateLimit);
     }
 }

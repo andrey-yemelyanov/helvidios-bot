@@ -14,12 +14,11 @@ class HttpClientWithRateLimit implements HttpClient {
 
     /**
      * Creates a new instance of {@link HttpClientWithRateLimit}
-     * @param rateLimiter shared rate limiter used by this client
      * @param httpClient underlying http client to which actual page downloading will be delegated
      */
-    HttpClientWithRateLimit(RateLimiter rateLimiter, HttpClient httpClient){
-        this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter must not be null");
+    HttpClientWithRateLimit(int requestsPerSecond, HttpClient httpClient){
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
+        this.rateLimiter = RateLimiter.create(requestsPerSecond);
     }
 
     @Override
