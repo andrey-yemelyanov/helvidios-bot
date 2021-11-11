@@ -34,8 +34,7 @@ class MongoDocumentDb implements DocumentDb {
 
     @Override
     public void clear() throws DocumentDbException {
-        // TODO Auto-generated method stub
-        
+        collection.deleteMany(Filters.empty());
     }
 
     @Override
@@ -43,11 +42,7 @@ class MongoDocumentDb implements DocumentDb {
         try{
             var doc = collection.find(Filters.eq("_id", docId)).first();
             if(doc == null) throw new DocumentNotFoundException(docId);
-            return HtmlDocument.of(
-                Long.parseLong(doc.get("_id").toString()), 
-                URI.create(doc.get("url").toString()),
-                doc.get("content").toString()
-            );
+            return toHtmlDocument(doc);
         }
         catch(DocumentNotFoundException ex) {
             throw ex;
@@ -59,8 +54,12 @@ class MongoDocumentDb implements DocumentDb {
 
     @Override
     public boolean contains(URI url) throws DocumentDbException {
-        // TODO Auto-generated method stub
-        return false;
+        try{
+            return collection.find(Filters.eq("url", url.toString())).first() != null;
+        }
+        catch(Exception ex){
+            throw new DocumentDbException(ex);
+        }
     }
 
     @Override
@@ -79,8 +78,26 @@ class MongoDocumentDb implements DocumentDb {
 
     @Override
     public Iterator<HtmlDocument> iterator() {
-        // TODO Auto-generated method stub
-        return null;
+        return new Iterator<HtmlDocument>() {
+            private Iterator<Document> it = collection.find().iterator();
+
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public HtmlDocument next() {
+                return toHtmlDocument(it.next());
+            }
+        };
     }
     
+    private static HtmlDocument toHtmlDocument(Document bsonDocument){
+        return HtmlDocument.of(
+            Long.parseLong(bsonDocument.get("_id").toString()), 
+            URI.create(bsonDocument.get("url").toString()),
+            bsonDocument.get("content").toString()
+        );
+    }
 }

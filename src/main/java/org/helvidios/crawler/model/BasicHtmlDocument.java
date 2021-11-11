@@ -13,7 +13,7 @@ class BasicHtmlDocument implements HtmlDocument {
     private final String content;
     private final URI url;
     private final long id;
-
+    
     BasicHtmlDocument(long id, URI url, String content){
         this.id = id;
         this.url = Objects.requireNonNull(url, "url must not be null");
@@ -51,5 +51,10 @@ class BasicHtmlDocument implements HtmlDocument {
             "[%s]%s%s%s\n", 
             url(), separator, content(), separator
         );
+    }
+
+    @Override
+    public String title() {
+        return "";
     }
 }

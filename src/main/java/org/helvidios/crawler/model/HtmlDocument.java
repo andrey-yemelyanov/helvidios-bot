@@ -7,6 +7,12 @@ import java.util.List;
  * Represents a generic HTML page with content.
  */
 public interface HtmlDocument {
+
+    /**
+     * Returns document title extracted from the <title> HTML tag.
+     * @return document title
+     */
+    public String title();
     
     /**
      * Returns raw HTML content of this page

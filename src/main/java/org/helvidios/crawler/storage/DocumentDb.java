@@ -49,6 +49,21 @@ public interface DocumentDb extends Iterable<HtmlDocument> {
     void write(HtmlDocument doc) throws DocumentWriteException;
 
     /**
+     * Compression options for HTML document content.
+     */
+    public enum CompressionOptions {
+        /**
+         * Perform GZIP compression on HTML document content
+         */
+        CompressDocumentContent,
+
+        /**
+         * HTML document content will not be compressed
+         */
+        DoNotCompressDocumentContent
+    }
+
+    /**
      * Creates a {@link DocumentDb} instance for a specific connection string.
      * <p>Connection string must be in standard URI format:</p>
      * <p>[scheme://][user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...</p>
@@ -56,22 +71,26 @@ public interface DocumentDb extends Iterable<HtmlDocument> {
      * <p>MongoDb: mongodb://localhost:27017/document-db</p>
      * <p><b>NOTE: Currently only MongoDb is supported.</b> Clients are free to use their own implementation of {@link DocumentDb}.</p>
      * @param connectionString connection string in URI format
+     * @param compression controls whether HTML document content will be GZIP compressed
      * @throws IllegalArgumentException if connection string is invalid or no {@link DocumentDb} provider exists for the supplied connection string
      * @return {@link DocumentDb} instance
      */
-    static DocumentDb createFor(URI connectionString) {
+    static DocumentDb createFor(URI connectionString, CompressionOptions compression) {
         Objects.requireNonNull(connectionString, "connectionString must not be null");
         var scheme = connectionString.getScheme();
         if(scheme == null) throw new IllegalArgumentException(
             String.format("Invalid connection string [%s]. Scheme not found.", connectionString)
         );
-        switch(scheme){
-            case "mongodb":
-                return new MongoDocumentDb(connectionString);
-            default:
-                throw new IllegalArgumentException(
-                    String.format("No provider exists for connection string [%s]", connectionString)
-                );
-        }
+
+        var docDb = 
+            switch(scheme){
+                case "mongodb" -> new MongoDocumentDb(connectionString);
+                default -> throw new IllegalArgumentException(
+                                String.format("No provider exists for connection string [%s]", connectionString));
+            };
+
+        return compression == CompressionOptions.CompressDocumentContent 
+            ? new CompressedDocumentDb(docDb)
+            : docDb;
     }
 }
