@@ -15,7 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 @Category(SlowTest.class)
-public class BasicHttpClientTests {
+public class NetworkCommunicationTests {
 
     @Test
     public void ShouldDownloadWebPageFromInternetUsingRateLimitingAndRetry() throws FetchException {

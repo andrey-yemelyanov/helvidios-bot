@@ -28,6 +28,9 @@ public interface HttpClient {
         return new Builder();
     }
 
+    /**
+     * Builder for constructing an {@link HttpClient} instance.
+     */
     static class Builder {
         private Duration requestTimeout = Duration.ofMinutes(1);
         private Integer retries;

@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Implements {@link HtmlDocument}.
@@ -20,7 +21,7 @@ class BasicHtmlDocument implements HtmlDocument {
     }
 
     BasicHtmlDocument(URI url, String content){
-        this(0, url, content);
+        this(ThreadLocalRandom.current().nextLong(), url, content);
     }
 
     @Override
