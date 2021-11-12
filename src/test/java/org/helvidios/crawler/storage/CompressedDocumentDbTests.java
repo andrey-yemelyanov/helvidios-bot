@@ -41,7 +41,7 @@ public class CompressedDocumentDbTests {
             return null;
         }).when(docDbMock).write(any());
 
-        DocumentDb docDb = new CompressedDocumentDb(docDbMock);
+        DocumentDb docDb = new DocumentDbWithCompression(HtmlDocumentCompression.gzip(), docDbMock);
         docDb.write(document);
 
         when(docDbMock.get(document.docId())).thenReturn(compressedDocument);

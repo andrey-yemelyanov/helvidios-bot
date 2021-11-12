@@ -1,7 +1,9 @@
 package org.helvidios.crawler.storage;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Objects;
+import com.google.common.base.Function;
 import org.helvidios.crawler.model.HtmlDocument;
 
 /**
@@ -49,48 +51,105 @@ public interface DocumentDb extends Iterable<HtmlDocument> {
     void write(HtmlDocument doc) throws DocumentWriteException;
 
     /**
-     * Compression options for HTML document content.
+     * Returns a builder object for {@link DocumentDb}.
+     * @return {@link Builder} object
      */
-    public enum CompressionOptions {
-        /**
-         * Perform GZIP compression on HTML document content
-         */
-        CompressDocumentContent,
-
-        /**
-         * HTML document content will not be compressed
-         */
-        DoNotCompressDocumentContent
+    public static Builder Builder() {
+        return new Builder();
     }
 
-    /**
-     * Creates a {@link DocumentDb} instance for a specific connection string.
-     * <p>Connection string must be in standard URI format:</p>
-     * <p>[scheme://][user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...</p>
-     * <p>Examples:</p>
-     * <p>MongoDb: mongodb://localhost:27017/document-db</p>
-     * <p><b>NOTE: Currently only MongoDb is supported.</b> Clients are free to use their own implementation of {@link DocumentDb}.</p>
-     * @param connectionString connection string in URI format
-     * @param compression controls whether HTML document content will be GZIP compressed
-     * @throws IllegalArgumentException if connection string is invalid or no {@link DocumentDb} provider exists for the supplied connection string
-     * @return {@link DocumentDb} instance
-     */
-    static DocumentDb createFor(URI connectionString, CompressionOptions compression) {
-        Objects.requireNonNull(connectionString, "connectionString must not be null");
-        var scheme = connectionString.getScheme();
-        if(scheme == null) throw new IllegalArgumentException(
-            String.format("Invalid connection string [%s]. Scheme not found.", connectionString)
+    static class Builder {
+        private boolean useCompression;
+        private boolean useCaching;
+        private DocumentDb storageProvider = new InMemoryDocumentDb();
+        private UrlCache urlCache = new GuavaCache();
+        private HtmlDocumentCompression compressionProvider = HtmlDocumentCompression.gzip();
+
+        private final Map<String, Function<URI, DocumentDb>> providers = Map.ofEntries(
+            Map.entry("mongodb", MongoDocumentDb::new)
         );
 
-        var docDb = 
-            switch(scheme){
-                case "mongodb" -> new MongoDocumentDb(connectionString);
-                default -> throw new IllegalArgumentException(
-                                String.format("No provider exists for connection string [%s]", connectionString));
-            };
+        private Builder(){}
 
-        return compression == CompressionOptions.CompressDocumentContent 
-            ? new CompressedDocumentDb(docDb)
-            : docDb;
+        /**
+         * Use default GZIP compression of HTML documents stored in the db.
+         * @return {@link Builder}
+         */
+        public Builder withCompression() {
+            this.useCompression = true;
+            return this;
+        }
+
+        /**
+         * Use custom compression provider for HTML document compression.
+         * @param compressionProvider {@link HtmlDocumentCompression} compression provider
+         * @return {@link Builder}
+         */
+        public Builder withCompression(HtmlDocumentCompression compressionProvider) {
+            this.useCompression = true;
+            this.compressionProvider = Objects.requireNonNull(compressionProvider, "compressionProvider must not be null");
+            return this;
+        }
+
+        /**
+         * Enable default in-memory caching of URLs based on Guava's cache implementation.
+         * @return {@link Builder}
+         */
+        public Builder withUrlCaching() {
+            this.useCaching = true;
+            return this;
+        }
+
+        /**
+         * Enable URL caching using a custom provider.
+         * @param urlCache URL caching provider
+         * @return {@link Builder}
+         */
+        public Builder withUrlCaching(UrlCache urlCache) {
+            this.useCaching = true;
+            this.urlCache = Objects.requireNonNull(urlCache, "urlCache must not be null");
+            return this;
+        }
+
+        /**
+         * Sets storage provider given a specific connection string. This method will attempt to resolve the correct provider.
+         * If the provider indicated by the scheme element in the connection string is not supported, an {@link IllegalArgumentException} will be thrown.
+         * <p>Connection string must be in standard URI format:</p>
+         * <p>[scheme://][user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...</p>
+         * <p>Examples:</p>
+         * <p>MongoDb: mongodb://localhost:27017/document-db</p>
+         * <p>Clients are free to use their own implementation of {@link DocumentDb} if their preferred storage engine is not supported.</p>
+         * @param connectionString connection string in URI format
+         * @throws IllegalArgumentException if connection string is invalid or no provider exists for the supplied connection string
+         * @return {@link Builder}
+         */
+        public Builder withStorageProvider(URI connectionString) {
+            Objects.requireNonNull(connectionString, "connectionString must not be null");
+            var scheme = connectionString.getScheme();
+            Objects.requireNonNull(scheme, String.format("Invalid connection string [%s]. Scheme not found.", connectionString));
+
+            if(!providers.containsKey(scheme)){
+                throw new IllegalArgumentException(String.format("No provider exists for connection string [%s]", connectionString));
+            }
+
+            this.storageProvider = providers.get(scheme).apply(connectionString);
+
+            return this;
+        }
+
+
+        public DocumentDb build() {
+            var docDb = storageProvider;
+
+            if(useCompression) {
+                docDb = new DocumentDbWithCompression(compressionProvider, docDb);
+            }
+
+            if(useCaching) {
+                docDb = new DocumentDbWithUrlCache(urlCache, docDb);
+            }
+
+            return docDb;
+        }
     }
 }

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.helvidios.crawler.SlowTest;
 import org.helvidios.crawler.model.HtmlDocument;
-import org.helvidios.crawler.storage.DocumentDb.CompressionOptions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -20,9 +19,10 @@ import org.mockito.junit.MockitoJUnitRunner;
 @Category(SlowTest.class)
 public class MongoDocumentDbTests {
 
-    private final DocumentDb docDb = DocumentDb.createFor(
-        URI.create("mongodb://localhost:27017/document-db-test"),
-        CompressionOptions.DoNotCompressDocumentContent);
+    private final DocumentDb docDb = 
+        DocumentDb.Builder()
+                  .withStorageProvider(URI.create("mongodb://localhost:27017/document-db-test"))
+                  .build();
 
     @Before
     public void init() throws DocumentDbException {
@@ -87,11 +87,13 @@ public class MongoDocumentDbTests {
 
     @Test
     public void ShouldReadWriteHtmlDocumentFromMongoUsingCompression() throws DocumentNotFoundException, DocumentDbException {
-        var docDb = DocumentDb.createFor(
-            URI.create("mongodb://localhost:27017/document-db-test"), 
-            CompressionOptions.CompressDocumentContent);
 
-        assertTrue("docDb must be instanceof CompressedDocumentDb", docDb instanceof CompressedDocumentDb);
+        var docDb = DocumentDb.Builder()
+                              .withStorageProvider(URI.create("mongodb://localhost:27017/document-db-test"))
+                              .withCompression()
+                              .build();
+
+        assertTrue("docDb must be instanceof DocumentDbWithCompression", docDb instanceof DocumentDbWithCompression);
 
         final HtmlDocument document = HtmlDocument.of(URI.create("https://www.w3schools.com/html/html_basic.asp"), 
             """
