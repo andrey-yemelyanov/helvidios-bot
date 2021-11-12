@@ -46,6 +46,26 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>unit-tests</id>
+      <activation>
+          <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+          <skipUnitTests>false</skipUnitTests>
+          <skipIntegTests>true</skipIntegTests>
+      </properties>
+    </profile>
+    <profile>
+      <id>integration-tests</id>
+      <properties>
+          <skipUnitTests>false</skipUnitTests>
+          <skipIntegTests>false</skipIntegTests>
+      </properties>
+    </profile>
+  </profiles>
+
   <build>
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
@@ -66,10 +86,36 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.22.1</version>
-          <configuration>
-            <groups>org.helvidios.crawler.UnitTest</groups>
-            <excludedGroups>org.helvidios.crawler.SlowTest</excludedGroups>
-          </configuration>
+          <executions>
+            <execution>
+              <id>default-test</id>
+              <configuration>
+                  <skip>true</skip>
+              </configuration>
+            </execution>
+            <execution>
+              <id>unit-tests</id>
+              <phase>test</phase>
+              <goals>
+                  <goal>test</goal>
+              </goals>
+              <configuration>
+                  <skip>${skipUnitTests}</skip>
+                  <excludedGroups>org.helvidios.crawler.SlowTest</excludedGroups>
+              </configuration>
+            </execution>
+            <execution>
+              <id>integration-tests</id>
+              <phase>test</phase>
+              <goals>
+                  <goal>test</goal>
+              </goals>
+              <configuration>
+                  <skip>${skipIntegTests}</skip>
+                  <groups>org.helvidios.crawler.SlowTest</groups>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <artifactId>maven-jar-plugin</artifactId>
