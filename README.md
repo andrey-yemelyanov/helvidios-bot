@@ -1,4 +1,4 @@
-![example workflow](https://github.com/andrey-yemelyanov/helvidios-bot/actions/workflows/maven.yml/badge.svg)
+![asdf](https://github.com/andrey-yemelyanov/helvidios-bot/actions/workflows/maven.yml/badge.svg)
 
 # helvidios-bot
 
