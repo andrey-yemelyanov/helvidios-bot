@@ -3,7 +3,7 @@ package org.helvidios.crawler.storage;
 import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
-import com.google.common.base.Function;
+import java.util.function.Function;
 import org.helvidios.crawler.model.HtmlDocument;
 
 /**
@@ -126,7 +126,11 @@ public interface DocumentDb extends Iterable<HtmlDocument> {
         public Builder withStorageProvider(URI connectionString) {
             Objects.requireNonNull(connectionString, "connectionString must not be null");
             var scheme = connectionString.getScheme();
-            Objects.requireNonNull(scheme, String.format("Invalid connection string [%s]. Scheme not found.", connectionString));
+            if(scheme == null) {
+                throw new IllegalArgumentException(
+                    String.format("Invalid connection string [%s]. Scheme not found.", connectionString)
+                );
+            }
 
             if(!providers.containsKey(scheme)){
                 throw new IllegalArgumentException(String.format("No provider exists for connection string [%s]", connectionString));

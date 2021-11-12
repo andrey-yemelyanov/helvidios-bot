@@ -21,5 +21,4 @@ public interface UrlCache {
      * @return true if the given URL exists
      */
     boolean contains(URI url);
-
 }
