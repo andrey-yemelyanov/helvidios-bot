@@ -17,7 +17,7 @@ public class HttpClientWithRetryTests {
 
     private final URI url = URI.create("http://www.google.com");
     private final String content = "<html><body>hello</body></html>";
-    
+
     @Test
     public void ShouldNotRetryWhenServerResponds() throws FetchException {
 

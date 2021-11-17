@@ -7,6 +7,8 @@ import org.helvidios.crawler.model.HtmlDocument;
 
 /**
  * Responsible for all HTTP traffic with external resources.
+ * Implementations provide rate limiting and retries. HTTP status 429 Too Many Requests
+ * must be respected.
  */
 public interface HttpClient {
     
@@ -75,13 +77,13 @@ public interface HttpClient {
          */
         public HttpClient build(){
             HttpClient httpClient = new BasicHttpClient(requestTimeout);
+
+            if(requestsPerSecond != null){
+                httpClient = new HttpClientWithRateLimit(requestsPerSecond, httpClient);
+            }
             
             if(retries != null) {
                 httpClient = new HttpClientWithRetry(retries, httpClient);
-            }
-            
-            if(requestsPerSecond != null){
-                httpClient = new HttpClientWithRateLimit(requestsPerSecond, httpClient);
             }
 
             return httpClient;

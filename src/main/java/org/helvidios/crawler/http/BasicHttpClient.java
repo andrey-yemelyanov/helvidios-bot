@@ -1,5 +1,6 @@
 package org.helvidios.crawler.http;
 
+import java.net.HttpRetryException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -36,6 +37,19 @@ class BasicHttpClient implements org.helvidios.crawler.http.HttpClient {
                 .build();
 
             var response = httpClient.send(request, BodyHandlers.ofString());
+
+            // handle 429 Too Many Requests
+            if(response.statusCode() == 429){
+                throw new TooManyRequestsException(url, response.headers().map());
+            }
+
+            if(response.statusCode() != 200) {
+                throw new HttpRetryException(
+                    String.format("Expecting status code 200 but server returned status code %d", response.statusCode()), 
+                    response.statusCode());
+            }
+
+            System.out.println("Downloaded " + url);
 
             return HtmlDocument.of(url, response.body());
         }

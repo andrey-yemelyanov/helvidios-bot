@@ -32,6 +32,6 @@ public class BuilderTests {
     @Test
     public void ShouldBuildHttpClientWithRateLimiterAndRetry() {
         var httpClient = HttpClient.Builder().withRateLimiter(1).withRetries(3).build();
-        assertTrue("httpClient must be instanceof HttpClientWithRateLimit", httpClient instanceof HttpClientWithRateLimit);
+        assertTrue("httpClient must be instanceof HttpClientWithRetry", httpClient instanceof HttpClientWithRetry);
     }
 }
